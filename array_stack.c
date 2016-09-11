@@ -45,7 +45,7 @@ int is_empty(struct stack_s stack);
 void push(struct stack_s* stack, char data);
 
 /*
- * Pop new data from the stack or raise an error if it is empty.
+ * Pop data from the stack or raise an error if it is empty.
  */
 char pop(struct stack_s* stack);
 
