@@ -1,3 +1,10 @@
+/**
+ * Implementation of array-based queue, following the approach explained at
+ * Introduction to Algorithms - Cormen et. al (Chapter 10), for didactic
+ * purposes.
+ *
+ * Author: Matheus V. Portela (matheus.v.portela@gmail.com)
+ */
 #include <stdio.h>
 #include <stdlib.h>
 
