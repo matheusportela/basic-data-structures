@@ -17,7 +17,9 @@ void delete_tree(struct tree* tree);
 struct node* search_tree(struct tree* tree, int data);
 void print_tree(struct tree* tree);
 struct node* create_node(int data);
-void delete_node(struct node* node);
+void transplant_node(struct tree* tree, struct node* old, struct node* new);
+struct node* minimum_node(struct node* node);
+void delete_node(struct tree* tree, struct node* node);
 void insert_node(struct tree* tree, struct node* node);
 void inorder_walk(struct node* node);
 struct node* search_node(struct node* node, int data);
@@ -42,8 +44,13 @@ int main() {
     printf("\nSearching for tree \"9\", which is not in the tree\n");
     print_node(search_tree(tree, 9));
 
+    printf("\nDeleting \"5\"\n");
+    delete_node(tree, search_tree(tree, 5));
+    print_tree(tree);
+
     printf("\nDeleting tree\n");
     delete_tree(tree);
+
     return 0;
 }
 
@@ -54,7 +61,8 @@ struct tree* create_tree() {
 }
 
 void delete_tree(struct tree* tree) {
-    delete_node(tree->root);
+    while (tree->root)
+        delete_node(tree, tree->root);
     free(tree);
 }
 
@@ -76,12 +84,47 @@ struct node* create_node(int data) {
     return node;
 }
 
-void delete_node(struct node* node) {
-    if (node != NULL) {
-        delete_node(node->left);
-        delete_node(node->right);
-        free(node);
+void transplant_node(struct tree* tree, struct node* old, struct node* new) {
+    if (old->parent == NULL)
+        tree->root = new;
+    else if (old == old->parent->left)
+        old->parent->left = new;
+    else
+        old->parent->right = new;
+
+    if (new != NULL)
+        new->parent = old->parent;
+}
+
+struct node* minimum_node(struct node* node) {
+    if (node == NULL || node->left == NULL)
+        return node;
+    else
+        minimum_node(node->left);
+}
+
+void delete_node(struct tree* tree, struct node* node) {
+    struct node* minimum;
+
+    if (node->left == NULL) {
+        transplant_node(tree, node, node->right);
+    } else if (node->right == NULL) {
+        transplant_node(tree, node, node->left);
+    } else {
+        minimum = minimum_node(node->right);
+
+        if (minimum->parent != node) {
+            transplant_node(tree, minimum, minimum->right);
+            minimum->right = node->right;
+            minimum->right->parent = minimum;
+        }
+
+        transplant_node(tree, node, minimum);
+        minimum->left = node->left;
+        minimum->left->parent = minimum;
     }
+
+    free(node);
 }
 
 void insert_node(struct tree* tree, struct node* node) {
@@ -136,14 +179,14 @@ void print_node(struct node* node) {
         else
             printf("nil");
 
-        printf(", left: ");
+        printf(",\tleft: ");
 
         if (node->left)
             printf("%d", node->left->data);
         else
             printf("nil");
 
-        printf(", right: ");
+        printf(",\tright: ");
 
         if (node->right)
             printf("%d", node->right->data);
